@@ -30,6 +30,7 @@ text {
 
 </style>
 <body>
+<p>Bigram frequency visualization: what is the most common following letter?</p>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
 <script>
 
@@ -61,7 +62,7 @@ d3.tsv("bigrams.txt", function(error, data) {
   }
   
 var width = 1000,
-    height = 1000;
+    height = 700;
 
 var force = d3.layout.force()
     .nodes(d3.values(nodes))
@@ -71,7 +72,7 @@ var force = d3.layout.force()
     .charge(-300)
     .on("tick", tick)
     .start();
-
+	
 var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height);
