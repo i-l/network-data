@@ -20,6 +20,14 @@
   stroke-dasharray: 0,2 1;
 }
 
+.vowel {
+	fill: red;
+}
+
+.consonant {
+	fill: blue;
+}
+
 circle {
   fill: #ccc;
   stroke: #333;
@@ -45,9 +53,17 @@ var nodes = {};
 d3.tsv("bigrams.txt", function(error, data) {
   if (error) throw error;
   
+  var vowels = ['a', 'e', 'i', 'o', 'u', 'y'];
+  
+  
   for (var i = 0; i < 26; i++) {
-  var ch = String.fromCharCode(i + 97);
-	nodes[ch] = {"name": ch, "group": 1};
+	var ch = String.fromCharCode(i + 97);
+	var vowel = false;
+	if (vowels.indexOf(ch) != -1) {
+		vowel = true;
+		console.log(ch);
+	}
+	nodes[ch] = {"name": ch, "type": vowel ? "vowel" : "consonant"};
 	var max = 0;
 	var maxCh = -1;
 	for (var j = 0; j < 26; j++) {
@@ -57,12 +73,9 @@ d3.tsv("bigrams.txt", function(error, data) {
 			maxCh = j;
 		}
 	}
-	console.log(i + " " + maxCh + " " + max + " " + String.fromCharCode(i + 97) + " " + String.fromCharCode(maxCh + 97));
-	links.push({"source":i,"target":maxCh,"value":max, "type": "suit"});	
+	links.push({"source":i,"target":maxCh,"value":max, "type": "max"});	
   }
   
-
-
 console.log(nodes);
 var width = 960,
     height = 500;
@@ -82,8 +95,8 @@ var svg = d3.select("body").append("svg")
 
 // Per-type markers, as they don't inherit styles.
 svg.append("defs").selectAll("marker")
-    .data(["suit", "licensing", "resolved"])
-  .enter().append("marker")
+    .data(["max"])
+	.enter().append("marker")
     .attr("id", function(d) { return d; })
     .attr("viewBox", "0 -5 10 10")
     .attr("refX", 15)
@@ -91,7 +104,7 @@ svg.append("defs").selectAll("marker")
     .attr("markerWidth", 6)
     .attr("markerHeight", 6)
     .attr("orient", "auto")
-  .append("path")
+	.append("path")
     .attr("d", "M0,-5L10,0L0,5");
 
 var path = svg.append("g").selectAll("path")
@@ -102,16 +115,17 @@ var path = svg.append("g").selectAll("path")
 
 var circle = svg.append("g").selectAll("circle")
     .data(force.nodes())
-  .enter().append("circle")
+	.enter().append("circle")
     .attr("r", 6)
-    .call(force.drag);
+    .attr("class", function(d) { return "node " + d.type; } )
+	.call(force.drag);
 
 var text = svg.append("g").selectAll("text")
     .data(force.nodes())
-  .enter().append("text")
+	.enter().append("text")
     .attr("x", 8)
     .attr("y", ".31em")
-	  .attr("style", "font-size:20px")
+	.attr("style", "font-size:20px")
     .text(function(d) { return d.name; });
 
 // Use elliptical arc path segments to doubly-encode directionality.
