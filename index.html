@@ -8,18 +8,6 @@
   stroke-width: 1.5px;
 }
 
-#licensing {
-  fill: green;
-}
-
-.link.licensing {
-  stroke: green;
-}
-
-.link.resolved {
-  stroke-dasharray: 0,2 1;
-}
-
 .vowel {
 	fill: red;
 }
@@ -45,9 +33,7 @@ text {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
 <script>
 
-// http://blog.thomsonreuters.com/index.php/mobile-patent-suits-graphic-of-the-day/
 var links = [];
-
 var nodes = {};
 
 d3.tsv("bigrams.txt", function(error, data) {
@@ -55,15 +41,12 @@ d3.tsv("bigrams.txt", function(error, data) {
   
   var vowels = ['a', 'e', 'i', 'o', 'u', 'y'];
   
-  
   for (var i = 0; i < 26; i++) {
 	var ch = String.fromCharCode(i + 97);
 	var vowel = false;
 	if (vowels.indexOf(ch) != -1) {
 		vowel = true;
-		console.log(ch);
 	}
-	nodes[ch] = {"name": ch, "type": vowel ? "vowel" : "consonant"};
 	var max = 0;
 	var maxCh = -1;
 	for (var j = 0; j < 26; j++) {
@@ -73,18 +56,18 @@ d3.tsv("bigrams.txt", function(error, data) {
 			maxCh = j;
 		}
 	}
+	nodes[ch] = {"name": ch, "type": vowel ? "vowel" : "consonant", "sum": data[i]["Freq"]};
 	links.push({"source":i,"target":maxCh,"value":max, "type": "max"});	
   }
   
-console.log(nodes);
-var width = 960,
-    height = 500;
+var width = 1000,
+    height = 1000;
 
 var force = d3.layout.force()
     .nodes(d3.values(nodes))
     .links(links)
     .size([width, height])
-    .linkDistance(60)
+    .linkDistance(80)
     .charge(-300)
     .on("tick", tick)
     .start();
@@ -116,16 +99,16 @@ var path = svg.append("g").selectAll("path")
 var circle = svg.append("g").selectAll("circle")
     .data(force.nodes())
 	.enter().append("circle")
-    .attr("r", 6)
+    .attr("r", function(d) { return Math.sqrt(d.sum) * 3; })
     .attr("class", function(d) { return "node " + d.type; } )
 	.call(force.drag);
 
 var text = svg.append("g").selectAll("text")
     .data(force.nodes())
 	.enter().append("text")
-    .attr("x", 8)
+    .attr("x", 10)
     .attr("y", ".31em")
-	.attr("style", "font-size:20px")
+	.attr("style", "font-size:30px")
     .text(function(d) { return d.name; });
 
 // Use elliptical arc path segments to doubly-encode directionality.
